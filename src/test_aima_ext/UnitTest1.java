@@ -56,10 +56,10 @@ public class UnitTest1 {
 		DSRandVar rv = new DSRandVar("Murderer", singleEvents);
 		rv.saveToFile("testfile1.csv");
 		DSRandVar loaded = DSRandVar.loadFromFile("testfile1.csv");
-		System.out.println("origin["+rv.hashCode()+"]: "+rv);
-		System.out.println("loaded["+loaded.hashCode()+"]: "+loaded);
-		System.out.println(rv.equals( loaded));
-		System.out.println(rv.hashCode() == loaded.hashCode());
+//		System.out.println("origin["+rv.hashCode()+"]: "+rv);
+//		System.out.println("loaded["+loaded.hashCode()+"]: "+loaded);
+//		System.out.println(rv.equals( loaded));
+//		System.out.println(rv.hashCode() == loaded.hashCode());
 		assertEquals(loaded, rv);
 	}
 

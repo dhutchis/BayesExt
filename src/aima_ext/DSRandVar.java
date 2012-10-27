@@ -45,6 +45,8 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 	/** Construct from an already laid out mapping */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	DSRandVar(String name, Map<Set<?>, SubsetInfo> subsetMap) { // ArbitraryTokenDomain is nice
+		if (!SubsetInfo.verifyValidMass(subsetMap.values()))
+			throw new IllegalArgumentException("Invalide mass distribution for "+name+" on "+subsetMap);
 		this.name = name;
 		this.powersetMap = subsetMap;
 		// get the singleton subsets (the ones with a single event)
@@ -167,7 +169,6 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 				+ ((powersetMap == null) ? 0 : powersetMap.hashCode());
 		return result;
 	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

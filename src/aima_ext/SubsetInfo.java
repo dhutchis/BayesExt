@@ -1,5 +1,8 @@
 package aima_ext;
 
+import java.util.Collection;
+import java.util.Set;
+
 public class SubsetInfo {
 	public double mass=0, belief=0, plausability=1;
 	
@@ -19,6 +22,8 @@ public class SubsetInfo {
 	}
 	@Override
 	public boolean equals(Object obj) {
+
+		
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -31,4 +36,12 @@ public class SubsetInfo {
 			return false;
 		return true;
 	}
+
+	public static boolean verifyValidMass(Collection<? extends SubsetInfo> set) {
+		double mass = 0;
+		for (SubsetInfo si : set)
+			mass += si.mass;
+		return mass == 1.0; // tolerance?
+	}
+
 }
