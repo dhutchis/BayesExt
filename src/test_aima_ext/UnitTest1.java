@@ -1,8 +1,8 @@
 package test_aima_ext;
 
 import static org.junit.Assert.*;
-import aima.core.probability.domain.ArbitraryTokenDomain;
 import aima_ext.DSRandVar;
+import aima_ext.DSUtil;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -26,8 +26,8 @@ public class UnitTest1 {
 
 	@Test
 	public void testPowerSet() {
-		assertEquals(DSRandVar.powerSet(null),null);
-		assertEquals(DSRandVar.powerSet(new HashSet<Object>()), new HashSet<Set<Object>>(Collections.singleton(new HashSet<Object>())));
+		assertEquals(DSUtil.powerSet(null),null);
+		assertEquals(DSUtil.powerSet(new HashSet<Object>()), new HashSet<Set<Object>>(Collections.singleton(new HashSet<Object>())));
 		
 		Set<String>  
 				pa_m = new HashSet<String>(2),
@@ -47,7 +47,7 @@ public class UnitTest1 {
 		subsetSet.add(pe_pa);
 		subsetSet.add(singleEvents); Assert.assertEquals(subsetSet.size(), 8);
 
-		Set<Set<String>> powerSet = DSRandVar.powerSet(singleEvents);
+		Set<Set<String>> powerSet = DSUtil.powerSet(singleEvents);
 		Assert.assertEquals(powerSet, subsetSet);
 	}
 	

@@ -1,7 +1,6 @@
 package aima_ext;
 
 import java.util.Collection;
-import java.util.Set;
 
 public class SubsetInfo {
 	public double mass=0, belief=0, plausability=1;

@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
-import com.rits.cloning.Cloner;
 
 public class DSRandVar implements RandomVariable { // and TermProposition?
 	FiniteDomain domain; // the single events that make up this random variable
@@ -33,7 +32,7 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 		this.domain = domain;
 		this.powersetMap = new HashMap<Set<?>, SubsetInfo>();
 		Set singles = domain.getPossibleValues();
-		Set<Set> PS = (Set<Set>)DSRandVar.powerSet(singles);
+		Set<Set> PS = (Set<Set>)DSUtil.powerSet(singles);
 		for (Set subset : PS) {
 			SubsetInfo si = new SubsetInfo();
 			if (subset.equals(singles))
@@ -191,28 +190,5 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 		return true;
 	}
 
-	/** Returns the power set of the original set (members are deep copied) */
-	public static <T> Set<Set<T>> powerSet(final Set<T> origSet) {
-		if (origSet == null)
-			return null;
-		Set<Set<T>> PS = new HashSet<Set<T>>((int)Math.pow(2, origSet.size()));
-		@SuppressWarnings("unchecked")
-		final T[] list = (T[])origSet.toArray();
-		for (int i = 0; i <= origSet.size(); i++)
-			subComb(PS, list, new HashSet<T>(), 0, i, new Cloner());
-		return PS;
-	}
-	
-	private static <T> void subComb(Set<Set<T>> PS, final T[] list, Set<T> sofar, int pos, int numRem, final Cloner cloner) {
-		if (numRem == 0)
-			PS.add(cloner.deepClone(sofar)); // deep copy??
-		else {
-			for (int i = pos; i < list.length-(numRem-1); i++) {
-				sofar.add(list[i]);
-				subComb(PS, list, sofar, i+1, numRem-1, cloner);
-				sofar.remove(list[i]);
-			}
-		}
-	}
 	
 }
