@@ -3,10 +3,12 @@ package test_aima_ext;
 import static org.junit.Assert.*;
 import aima_ext.DSRandVar;
 import aima_ext.DSUtil;
+import aima_ext.SubsetInfo;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import junit.framework.Assert;
@@ -52,8 +54,8 @@ public class UnitTest1 {
 	}
 	
 	@Test
-	public void saveLoadFile() throws IOException {
-		DSRandVar rv = new DSRandVar("Murderer", singleEvents);
+	public void testSaveLoadFile() throws IOException {
+		DSRandVar rv = new DSRandVar("Murderer", singleEvents, true);
 		rv.saveToFile("testfile1.csv");
 		DSRandVar loaded = DSRandVar.loadFromFile("testfile1.csv");
 //		System.out.println("origin["+rv.hashCode()+"]: "+rv);
@@ -61,6 +63,42 @@ public class UnitTest1 {
 //		System.out.println(rv.equals( loaded));
 //		System.out.println(rv.hashCode() == loaded.hashCode());
 		assertEquals(loaded, rv);
+	}
+	
+	@Test
+	public void testCombineEvidence() throws IOException {
+		// setup rv1
+		Set<String>  pe_pa = new HashSet<String>(2);
+		pe_pa.add(peter); pe_pa.add(paul);
+		Map<Set, SubsetInfo> map1 = DSRandVar.createDefaultMassMap(singleEvents, false);
+		map1.get(Collections.singleton(mary)).mass = 0.5;
+		map1.get(pe_pa).mass = 0.5;
+//		map1.get(singleEvents).mass = 0.0;
+		
+		// setup rv2
+		Set<String>  pa_m = new HashSet<String>(2);
+		pa_m.add(mary); pa_m.add(paul);
+		Map<Set, SubsetInfo> map2 = DSRandVar.createDefaultMassMap(singleEvents, false);
+		map2.get(pa_m).mass = 1.0;
+//		map2.get(singleEvents).mass = 0.0;
+		
+		DSRandVar rv1 = new DSRandVar("E1", map1);
+		DSRandVar rv2 = new DSRandVar("E2", map2);
+		
+		DSRandVar rv12 = rv1.combineWith(rv2);
+		
+		// check it
+		Map<Set, SubsetInfo> map12 = DSRandVar.createDefaultMassMap(singleEvents, false);
+		map12.get(Collections.singleton(paul)).mass = 0.5;
+		map12.get(Collections.singleton(mary)).mass = 0.5;
+		assertEquals(rv12, new DSRandVar("E1+E2",map12));
+		
+		rv1.saveToFile("rv1.csv");
+		rv2.saveToFile("rv2.csv");
+		rv12.saveToFile("rv12.csv");
+		
+		rv12.propagateMass();
+		System.out.println(rv12.toFixedWidthString(true, false));
 	}
 
 }

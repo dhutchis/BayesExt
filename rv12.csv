@@ -1,0 +1,9 @@
+E1+E2
+"[]","0.0"
+"[paul]","0.5"
+"[peter]","0.0"
+"[mary]","0.5"
+"[peter, mary]","0.0"
+"[paul, peter]","0.0"
+"[paul, mary]","0.0"
+"[paul, peter, mary]","0.0"

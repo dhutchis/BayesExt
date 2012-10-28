@@ -13,48 +13,62 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import com.rits.cloning.Cloner;
 
+@SuppressWarnings({ "unchecked", "rawtypes" }) // this typing is really annoying! 
 public class DSRandVar implements RandomVariable { // and TermProposition?
-	FiniteDomain domain; // the single events that make up this random variable
+	final FiniteDomain domain; // the single events that make up this random variable
 				// ultimately this can only take on one of the values in the domain
-	Map<Set<?>, SubsetInfo> powersetMap;
-	String name;
+	final Map<Set, SubsetInfo> powersetMap;
+	final String name;
+	
+	/** Creates a default powerset mapping every subset to zero mass or, if startWithVacuous=true, just the full set to 1 */
+	public static  Map<Set, SubsetInfo> createDefaultMassMap(final Set singleEvents, boolean startWithVacuous) {
+		Map<Set, SubsetInfo> powersetMap = new HashMap<Set, SubsetInfo>();
+		System.out.println("singleEvents: "+singleEvents);
+		Set<Set> PS = (Set<Set>)DSUtil.powerSet(singleEvents);
+		for (Set subset : PS) {
+			SubsetInfo si = new SubsetInfo();
+			if (startWithVacuous && subset.equals(singleEvents))
+				si.mass = 1;
+			powersetMap.put(subset, si);
+		}
+		assert(SubsetInfo.verifyValidMass(powersetMap.values()));
+		return powersetMap;
+	}
 	
 	/** Makes a new ArbitraryTokenDomain out of the single events */
-	public DSRandVar(String name, Set<?> singleEvents) {
-		this(name, new ArbitraryTokenDomain(singleEvents.toArray()));
+	public DSRandVar(String name, Set singleEvents, boolean startWithVacuous) {
+		this(name, new ArbitraryTokenDomain(singleEvents.toArray()), startWithVacuous);
 	}
 	
 	/** construct a default DS distribution (all prob. mass in the full set) */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public DSRandVar(String name, FiniteDomain domain) {
+	public DSRandVar(String name, FiniteDomain domain, boolean startWithVacuous) {
 		this.name = name;
 		this.domain = domain;
-		this.powersetMap = new HashMap<Set<?>, SubsetInfo>();
-		Set singles = domain.getPossibleValues();
-		Set<Set> PS = (Set<Set>)DSUtil.powerSet(singles);
-		for (Set subset : PS) {
-			SubsetInfo si = new SubsetInfo();
-			if (subset.equals(singles))
-				si.mass = 1;
-			this.powersetMap.put(subset, si);
-		}
+		this.powersetMap = DSRandVar.createDefaultMassMap(domain.getPossibleValues(), startWithVacuous);
+		System.out.println("default powerset: "+powersetMap);
 	}
 	
 	/** Construct from an already laid out mapping */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	DSRandVar(String name, Map<Set<?>, SubsetInfo> subsetMap) { // ArbitraryTokenDomain is nice
+	public DSRandVar(String name, Map<Set, SubsetInfo> subsetMap) { // ArbitraryTokenDomain is nice
 		if (!SubsetInfo.verifyValidMass(subsetMap.values()))
 			throw new IllegalArgumentException("Invalide mass distribution for "+name+" on "+subsetMap);
 		this.name = name;
-		this.powersetMap = subsetMap;
+		this.powersetMap = (new Cloner()).deepClone(subsetMap);
 		// get the singleton subsets (the ones with a single event)
-		Set<?> singleVals = new HashSet<Object>();
-		for (Set subset : subsetMap.keySet())
+		Set singleVals = new HashSet<Object>();
+		for (Set subset : this.powersetMap.keySet())
 			if (subset.size() == 1)
 				singleVals.addAll( subset);
-		this.domain = new ArbitraryTokenDomain(singleVals);
+		this.domain = new ArbitraryTokenDomain(singleVals.toArray());
 	}
+	
+//	/* Generates a template file we can use to fill in probability masses */
+//	public static void generateTemplateFile(String filename, Set singleEvents)
+	// just do	DSRandVar rv = new DSRandVar("name", Set { varA, varB, ... });
+	//			rv.saveToFile(filename);
+	// and modify
 	
 	public static DSRandVar loadFromFile(String filename) throws IOException {
 		FileReader fr = new FileReader(filename);
@@ -67,7 +81,7 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 				sb.appendCodePoint(c);
 			name = sb.toString();
 		}
-		Map<Set<?>, SubsetInfo> subsetMap = new HashMap<Set<?>, SubsetInfo>();
+		Map<Set, SubsetInfo> subsetMap = new HashMap<Set, SubsetInfo>();
 		CSVReader reader = new CSVReader(fr);
 	    String [] nextLine;
 	    while ((nextLine = reader.readNext()) != null) {
@@ -80,19 +94,46 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 	    return new DSRandVar(name, subsetMap);
 	}
 	
-	//
-	// INSTANCE METHODS
-	//
+	public String toFixedWidthString(boolean includeHeader, boolean includeAll) {
+		// first, get the max length of the subset
+		int maxSubsetLength = powersetMap.get(domain.getPossibleValues()).toString().length();
+		StringBuilder sb = new StringBuilder();
+	    Formatter formatter = new Formatter(sb); // Send all output to the Appendable object sb
+	    String format;
+	    Object[] args;
+	    if (includeAll) {
+	    	if (includeHeader)
+	    		formatter.format("%"+maxSubsetLength+"s mass  bel   plaus\n", "subset");
+	    	format = "%"+maxSubsetLength+"s %5.3f %5.3f %5.3f\n";
+	    }
+	    else {
+	    	if (includeHeader)
+	    		formatter.format("%"+maxSubsetLength+"s mass\n", "subset");
+    		format = "%"+maxSubsetLength+"s %5.3f\n";
+	    }			
+	    
+		List<Entry<Set,SubsetInfo>> sortedEntryList = new ArrayList<Entry<Set,SubsetInfo>>(powersetMap.entrySet());
+		Collections.sort(sortedEntryList, new ComparatorByFirstEntry());
+		for (Entry<Set,SubsetInfo> entry : sortedEntryList) {
+			if (includeAll)
+				args = new Object[] { DSRandVar.collectionToString(entry.getKey()), entry.getValue().mass, entry.getValue().belief, entry.getValue().plausability };
+			else
+				args = new Object[] { DSRandVar.collectionToString(entry.getKey()), entry.getValue().mass };
+			formatter.format(format, args);
+		}
+		formatter.close();
+		return sb.toString();
+	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	
 	public void saveToFile(String filename) throws IOException {
 		FileWriter fw = new FileWriter(filename);
 		// write the name of the random var
 		fw.write(this.name+"\n");
 		CSVWriter writer = new CSVWriter(fw);
-		List<Entry<Set<?>,SubsetInfo>> sortedEntryList = new ArrayList<Entry<Set<?>,SubsetInfo>>(powersetMap.entrySet());
+		List<Entry<Set,SubsetInfo>> sortedEntryList = new ArrayList<Entry<Set,SubsetInfo>>(powersetMap.entrySet());
 		Collections.sort(sortedEntryList, new ComparatorByFirstEntry());
-		for (Entry<Set<?>,SubsetInfo> entry : sortedEntryList) {
+		for (Entry<Set,SubsetInfo> entry : sortedEntryList) {
 			String[] row = new String[2];
 			row[0] = DSRandVar.collectionToString(entry.getKey());
 			row[1] = String.valueOf(entry.getValue().mass);
@@ -190,5 +231,71 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 		return true;
 	}
 
+	private Set getLocalUniverse() {
+		Set u = new HashSet();
+		u.addAll( domain.getPossibleValues() );
+		return u;
+	}
+	
+	/** Propagates the mass to the belief and plausibility values */
+	public void propagateMass() {
+		List<Entry<Set,SubsetInfo>> sortedEntryList = new ArrayList<Entry<Set,SubsetInfo>>(powersetMap.entrySet());
+		Collections.sort(sortedEntryList, new ComparatorByFirstEntry());
+		
+		// belief
+		for (int i = 0; i < sortedEntryList.size(); i++) {
+			Entry<Set,SubsetInfo> entryToProp = sortedEntryList.get(i);
+			double mass = entryToProp.getValue().mass;
+			if (mass == 0) // nothing to propagate
+				continue;
+			Set setToProp = entryToProp.getKey();
+			// propagate the mass in this set to all supersets (don't have to look at past sets because we order by cardinality)
+			for (int j = i; j < sortedEntryList.size(); j++) {
+				Entry<Set,SubsetInfo> entry2 = sortedEntryList.get(j);
+				if (entry2.getKey().containsAll(setToProp))
+					entry2.getValue().belief += mass;
+			}
+		}
+		
+		// plausibility
+		for (Entry<Set,SubsetInfo> entry : sortedEntryList) {
+			Set complement = this.getLocalUniverse();
+			complement.removeAll( entry.getKey() );
+			entry.getValue().plausability = 1 - powersetMap.get(complement).belief;
+		}
+	}
+	
+	/** Use Dempster's Rule of Combination - returns null if incompatible (different domains or totally conflicting evidence) */
+	public DSRandVar combineWith(DSRandVar rv2) {
+		Cloner cloner = new Cloner();
+		if (!this.domain.equals(rv2.domain))
+			return null;
+		// for each entry in powersetMap, combine it with each entry in rv2 powersetMap
+		double nullvalue = 0.0;
+		System.out.println("make rvnew");
+		DSRandVar rvnew = new DSRandVar(this.name+"+"+rv2.name, this.domain, false);
+		for (Entry<Set,SubsetInfo> entry1 : this.powersetMap.entrySet()) {
+			double m1 = entry1.getValue().mass;
+			if (m1 == 0) continue;
+			for (Entry<Set,SubsetInfo> entry2 : rv2.powersetMap.entrySet()) {
+				double m2 = entry2.getValue().mass;
+				if (m2 == 0) continue;
+				Set intersection = cloner.deepClone( entry1.getKey() );
+				intersection.retainAll(entry2.getKey());
+				if (intersection.size() == 0)
+					nullvalue += m1 * m2;
+				else {
+					System.out.println("inter: "+intersection+"; get: "+rvnew.powersetMap.get(intersection)+"; power before: "+rvnew.powersetMap);
+					rvnew.powersetMap.get(intersection).mass += m1 * m2;
+				}
+			}
+		}
+		// now normalize
+		for (SubsetInfo si : rvnew.powersetMap.values()) {
+			si.mass /= (1-nullvalue);
+		}
+		assert (SubsetInfo.verifyValidMass(rvnew.powersetMap.values()));
+		return rvnew;
+	}
 	
 }
