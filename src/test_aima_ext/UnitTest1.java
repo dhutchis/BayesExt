@@ -97,7 +97,7 @@ public class UnitTest1 {
 		rv2.saveToFile("rv2.csv");
 		rv12.saveToFile("rv12.csv");
 		
-		rv12.propagateMass();
+		rv12.propagateMassToBelPl();
 		System.out.println(rv12.toFixedWidthString(true, false));
 	}
 

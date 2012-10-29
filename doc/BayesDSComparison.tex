@@ -1,0 +1,40 @@
+\documentclass[letterpaper]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts} % for \mathbb{R}
+\usepackage{alg}
+\usepackage[margin=1.25in]{geometry}
+
+
+\begin{document}
+\thispagestyle{empty}
+\pagestyle{empty} % no page numbers
+
+\author{Dylan Hutchison}
+\title{A Comparison between Dempster-Shafer and Bayesian Approaches to Soft Evidence}
+\date{last updated \today}
+%\institute{Stevens Institute of Technology\\
+%Hoboken, NJ 07030
+%\email{dhutchis@stevens.edu}}
+\maketitle
+
+%\noindent Dylan Hutchison\\
+%CS 810B Causal Inference\\
+%Project Proposal due 29 October 2012
+%\begin{center}
+%A Comparison between Dempster-Shafer and Bayesian Approaches to Soft Evidence
+%\end{center}
+
+\section{3-State Single Variable}
+Let's consider the case of a murder investigation that after considerable detective work has only three possible suspects: Peter, Paul and Mary.(CITE the Shafer book)  Let G be the random variable denoting the murderer and let the domain of G be \{Peter, Paul, Mary\}.  Let's see how the Bayesian and Dempster-Shafer approaches handle this scenario with varying degrees of evidence. \cite{Shafer1976}
+
+As single variable offers little chance of ambiguity, I will use the shorthand P(Peter) to denote P(G=Peter) frequently.
+
+\subsection{No evidence}
+Bayesian theory tells us to impart equal prior probability to the possible states of G if there is no other information.  Thus P(Peter)=P(Paul)=P(Mary)= $\tfrac{1}{3}$.
+
+Dempster-Shafer theory will impart no belief to any of the three single states of G.
+
+\bibliographystyle{splncs}
+\bibliography{BayesDSComparison}
+
+\end{document}

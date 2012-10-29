@@ -4,6 +4,8 @@ import java.util.Collection;
 
 public class SubsetInfo {
 	public double mass=0, belief=0, plausability=1;
+	/** include this for singleton subsets - normally holds likelihood ratio */
+	public double likely=-1;
 	
 	@Override
 	public String toString() {

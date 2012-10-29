@@ -31,6 +31,8 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 			SubsetInfo si = new SubsetInfo();
 			if (startWithVacuous && subset.equals(singleEvents))
 				si.mass = 1;
+			if (subset.size() == 1)
+				si.likely = 1;
 			powersetMap.put(subset, si);
 		}
 		assert(SubsetInfo.verifyValidMass(powersetMap.values()));
@@ -88,6 +90,10 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 	        Set<String> subset = DSRandVar.stringToStringSet(nextLine[0]);
 	        SubsetInfo si = new SubsetInfo();
 	        si.mass = Double.parseDouble(nextLine[1]);
+	        if (nextLine.length > 2)
+	        	si.likely = Double.parseDouble(nextLine[2]);
+	        else if (subset.size() == 1)
+	        	si.likely = 1;
 	        subsetMap.put(subset, si);
 	    }
 	    reader.close();
@@ -122,10 +128,17 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 			formatter.format(format, args);
 		}
 		formatter.close();
-		return sb.toString();
+		return sb.toString().replaceAll("0.000", "0    ").replaceAll("1.000", "1    ");
 	}
 	
-	
+	/** File format:
+	 * VarName
+	 * SubsetList,mass[,likely]
+	 * ...
+	 * SubsetLlist is a list of Objects ex. [Peter,Paul]
+	 * mass is a double
+	 * likely is a double stored only for singleton subsets (likelihood ratio; sometimes probability if they sum to 1)
+	 *  */
 	public void saveToFile(String filename) throws IOException {
 		FileWriter fw = new FileWriter(filename);
 		// write the name of the random var
@@ -134,9 +147,10 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 		List<Entry<Set,SubsetInfo>> sortedEntryList = new ArrayList<Entry<Set,SubsetInfo>>(powersetMap.entrySet());
 		Collections.sort(sortedEntryList, new ComparatorByFirstEntry());
 		for (Entry<Set,SubsetInfo> entry : sortedEntryList) {
-			String[] row = new String[2];
+			String[] row = entry.getKey().size() == 1 ? new String[3] : new String[2];
 			row[0] = DSRandVar.collectionToString(entry.getKey());
 			row[1] = String.valueOf(entry.getValue().mass);
+			if (entry.getKey().size() == 1) row[2] = String.valueOf(entry.getValue().likely);
 			writer.writeNext(row);
 		}
 		writer.close();
@@ -238,7 +252,7 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 	}
 	
 	/** Propagates the mass to the belief and plausibility values */
-	public void propagateMass() {
+	public void propagateMassToBelPl() {
 		List<Entry<Set,SubsetInfo>> sortedEntryList = new ArrayList<Entry<Set,SubsetInfo>>(powersetMap.entrySet());
 		Collections.sort(sortedEntryList, new ComparatorByFirstEntry());
 		
@@ -265,8 +279,15 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 		}
 	}
 	
+	/** Creates the best known  */
+	public void propagateMassToLikelihood() {
+		
+	}
+	
 	/** Use Dempster's Rule of Combination - returns null if incompatible (different domains or totally conflicting evidence) */
 	public DSRandVar combineWith(DSRandVar rv2) {
+		assert (SubsetInfo.verifyValidMass(powersetMap.values())); 
+		assert (SubsetInfo.verifyValidMass(rv2.powersetMap.values()));
 		Cloner cloner = new Cloner();
 		if (!this.domain.equals(rv2.domain))
 			return null;
