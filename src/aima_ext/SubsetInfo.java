@@ -9,7 +9,7 @@ public class SubsetInfo {
 	
 	@Override
 	public String toString() {
-		return "{m="+mass+",bel="+belief+",pl="+plausability+'}';
+		return "{m="+mass+",bel="+belief+","+(likely != -1 ? "LIKELY="+likely+',' : "")+"pl="+plausability+'}';
 	}
 
 	@Override

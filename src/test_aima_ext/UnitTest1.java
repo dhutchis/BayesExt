@@ -66,6 +66,58 @@ public class UnitTest1 {
 	}
 	
 	@Test
+	public void testPropagateMassToLikelihoodAndBeliefPlausability() {
+		Map<Set, SubsetInfo> map1 = DSRandVar.createDefaultMassMap(singleEvents, false);
+		map1.get(DSUtil.formSetFromObjects(peter)).mass = 0.2;
+		map1.get(DSUtil.formSetFromObjects(peter,paul)).mass = 0.3;
+		map1.get(singleEvents).mass = 0.5;
+		DSRandVar rv1 = new DSRandVar("RVtl",map1);
+		rv1.propagateMassToBelPl();
+		rv1.propagateMassToLikelihood();
+		
+		Map<Set, SubsetInfo> map2 = rv1.getUnmodifiablePowersetMap();
+		assertEquals(map2.get(Collections.EMPTY_SET).likely, -1, 0.00001);
+		assertEquals(map2.get(Collections.EMPTY_SET).mass, 0, 0.00001);
+		assertEquals(map2.get(Collections.EMPTY_SET).belief, 0, 0.00001);
+		assertEquals(map2.get(Collections.EMPTY_SET).plausability, 0.0, 0.00001);
+		
+		assertEquals(map2.get(Collections.singleton(peter)).likely, 2/4.6, 0.00001);
+		assertEquals(map2.get(Collections.singleton(peter)).mass, 0.2, 0.00001);
+		assertEquals(map2.get(Collections.singleton(peter)).belief, 0.2, 0.00001);
+		assertEquals(map2.get(Collections.singleton(peter)).plausability, 1.0, 0.00001);
+
+		assertEquals(map2.get(Collections.singleton(paul)).likely, 1.6/4.6, 0.00001);
+		assertEquals(map2.get(Collections.singleton(paul)).mass, 0.0, 0.00001);
+		assertEquals(map2.get(Collections.singleton(paul)).belief, 0.0, 0.00001);
+		assertEquals(map2.get(Collections.singleton(paul)).plausability, 0.8, 0.00001);
+		
+		assertEquals(map2.get(Collections.singleton(mary)).likely, 1.0/4.6, 0.00001);
+		assertEquals(map2.get(Collections.singleton(mary)).mass, 0.0, 0.00001);
+		assertEquals(map2.get(Collections.singleton(mary)).belief, 0.0, 0.00001);
+		assertEquals(map2.get(Collections.singleton(mary)).plausability, 0.5, 0.00001);
+		
+		assertEquals(map2.get(DSUtil.formSetFromObjects(peter,paul)).likely, -1, 0.00001);
+		assertEquals(map2.get(DSUtil.formSetFromObjects(peter,paul)).mass, 0.3, 0.00001);
+		assertEquals(map2.get(DSUtil.formSetFromObjects(peter,paul)).belief, 0.5, 0.00001);
+		assertEquals(map2.get(DSUtil.formSetFromObjects(peter,paul)).plausability, 1.0, 0.00001);
+		
+		assertEquals(map2.get(DSUtil.formSetFromObjects(paul,mary)).likely, -1, 0.00001);
+		assertEquals(map2.get(DSUtil.formSetFromObjects(paul,mary)).mass, 0.0, 0.00001);
+		assertEquals(map2.get(DSUtil.formSetFromObjects(paul,mary)).belief, 0.0, 0.00001);
+		assertEquals(map2.get(DSUtil.formSetFromObjects(paul,mary)).plausability, 0.8, 0.00001);
+		
+		assertEquals(map2.get(DSUtil.formSetFromObjects(peter,mary)).likely, -1, 0.00001);
+		assertEquals(map2.get(DSUtil.formSetFromObjects(peter,mary)).mass, 0.0, 0.00001);
+		assertEquals(map2.get(DSUtil.formSetFromObjects(peter,mary)).belief, 0.2, 0.00001);
+		assertEquals(map2.get(DSUtil.formSetFromObjects(peter,mary)).plausability, 1.0, 0.00001);
+		
+		assertEquals(map2.get(singleEvents).likely, -1, 0.00001);
+		assertEquals(map2.get(singleEvents).mass, 0.5, 0.00001);
+		assertEquals(map2.get(singleEvents).belief, 1.0, 0.00001);
+		assertEquals(map2.get(singleEvents).plausability, 1.0, 0.00001);
+	}
+	
+	@Test
 	public void testCombineEvidence() throws IOException {
 		// setup rv1
 		Set<String>  pe_pa = new HashSet<String>(2);
@@ -82,8 +134,8 @@ public class UnitTest1 {
 		map2.get(pa_m).mass = 1.0;
 //		map2.get(singleEvents).mass = 0.0;
 		
-		DSRandVar rv1 = new DSRandVar("E1", map1);
-		DSRandVar rv2 = new DSRandVar("E2", map2);
+		DSRandVar rv1 = new DSRandVar("E1", map1); rv1.propagateMassToLikelihood();
+		DSRandVar rv2 = new DSRandVar("E2", map2); rv2.propagateMassToLikelihood();
 		
 		DSRandVar rv12 = rv1.combineWith(rv2);
 		

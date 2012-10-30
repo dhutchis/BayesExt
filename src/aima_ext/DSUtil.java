@@ -9,7 +9,7 @@ public class DSUtil {
 
 	/** Returns the power set of the original set (members are deep copied) */
 	public static <T> Set<Set<T>> powerSet(final Set<T> origSet) {
-		System.out.println("powerSet input: "+origSet);
+		//System.out.println("powerSet input: "+origSet);
 		if (origSet == null)
 			return null;
 		Set<Set<T>> PS = new HashSet<Set<T>>((int)Math.pow(2, origSet.size()));
@@ -17,7 +17,7 @@ public class DSUtil {
 		final T[] list = (T[])origSet.toArray();
 		for (int i = 0; i <= origSet.size(); i++)
 			DSUtil.subComb(PS, list, new HashSet<T>(), 0, i, new Cloner());
-		System.out.println("powerSet output: "+PS);
+		//System.out.println("powerSet output: "+PS);
 		return PS;
 	}
 
@@ -31,6 +31,13 @@ public class DSUtil {
 				sofar.remove(list[i]);
 			}
 		}
+	}
+	
+	public static <T> Set<T> formSetFromObjects(T... objs) {
+		Set<T> s = new HashSet<T>(objs.length);
+		for( T object : objs)
+			s.add(object);
+		return s;
 	}
 
 }
