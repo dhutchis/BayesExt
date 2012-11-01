@@ -18,11 +18,10 @@ else
     data = textread('beliefWeakenCertaintyTest.csv')
     data = data.';
     numbins = numel(data(1,:));
-    p = data
-    data = data(2:end,end).'
-    %p = zeros(numel(data(:,1))-1,numbins);
-    %p(:) = data(2:end,:);
     
+    p = zeros(numel(data(:,1))-1,numbins);
+    p(:) = data(2:end,:);
+    data = data(1,:);
 end
 p
 plot(p(1,:),p(2:numel(data)+1,:))

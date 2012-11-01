@@ -187,5 +187,28 @@ public class UnitTest1 {
 		assertEquals(map12_combo.get(singleEvents).belief, 1.0, 0.00001);
 		assertEquals(map12_combo.get(singleEvents).plausability, 1.0, 0.00001);
 	}
+	
+	@Test
+	public void testWeakenEvidence() throws IOException {
+		// setup rv1
+		Map<Set, SubsetInfo> map1 = DSRandVar.createDefaultMassMap(singleEvents, false);
+		map1.get(Collections.singleton(mary)).mass = 0.25;
+		map1.get(DSUtil.formSetFromObjects(peter,paul)).mass = 0.75;
+		
+		DSRandVar rv1 = new DSRandVar("E1", map1);
+		rv1.weakenByCertainty(0.6);
+		rv1.propagateMassToLikelihood();
+		
+		Map<Set,SubsetInfo> map_weak = rv1.getUnmodifiablePowersetMap();
+		assertEquals(0.15, map_weak.get(Collections.singleton(mary)).mass, 0.00001);
+		assertEquals(0.45, map_weak.get(DSUtil.formSetFromObjects(peter, paul)).mass, 0.00001);
+		assertEquals(0.4, map_weak.get(singleEvents).mass, 0.00001);
+		
+		assertEquals(17.0/60, map_weak.get(Collections.singleton(mary)).likely, 0.00001);
+		assertEquals(43.0/120, map_weak.get(Collections.singleton(peter)).likely, 0.00001);
+		assertEquals(43.0/120, map_weak.get(Collections.singleton(paul)).likely, 0.00001);
+		
+		
+	}
 
 }

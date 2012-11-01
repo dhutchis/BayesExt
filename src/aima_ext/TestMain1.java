@@ -6,6 +6,8 @@ package aima_ext;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Formatter;
 
 import aima.core.probability.CategoricalDistribution;
 import aima.core.probability.ProbabilityModel;
@@ -33,7 +35,7 @@ public class TestMain1 {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		BayesianNetwork BN = constructBurgAlarmNet();
+		/*BayesianNetwork BN = constructBurgAlarmNet();
 		BayesInference bayesInference = new EnumerationAsk();
 		CategoricalDistribution d = bayesInference
 				.ask(new RandomVariable[] { ExampleRV.BURGLARY_RV },
@@ -48,8 +50,27 @@ public class TestMain1 {
 	    while ((nextLine = reader.readNext()) != null) {
 	        // nextLine[] is an array of values from the line
 	        System.out.println(nextLine[0] + nextLine[1] + "etc...");
-	    }
+	    }*/
 		
+		/** This will output the 3 probabilities of peter, paul and mary as we vary our level of certainty in the evidence given in load.csv */
+		DSRandVar load = DSRandVar.loadFromFile("load.csv");
+		load.propagateMassToBelPl();
+		load.propagateMassToLikelihood();
+		System.out.println(load.toFixedWidthString(true, true));
+		
+		StringBuffer sb = new StringBuffer();
+		Formatter formatter = new Formatter(sb);
+		for (double c = 0; c <= 1; c += 0.1) {
+			DSRandVar clone = new DSRandVar(load);
+			clone.weakenByCertainty(c);
+			clone.propagateMassToLikelihood();
+			formatter.format("%3.1f %5.3f %5.3f %5.3f\n", c,
+					clone.getUnmodifiablePowersetMap().get(Collections.singleton("peter")).likely,
+					clone.getUnmodifiablePowersetMap().get(Collections.singleton("paul")).likely,
+					clone.getUnmodifiablePowersetMap().get(Collections.singleton("mary")).likely);
+		}
+		formatter.close();
+		System.out.println(sb.toString());
 	}
 	
 	
