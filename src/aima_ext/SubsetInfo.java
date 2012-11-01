@@ -5,11 +5,11 @@ import java.util.Collection;
 public class SubsetInfo {
 	public double mass=0, belief=0, plausability=1;
 	/** include this for singleton subsets - normally holds likelihood ratio */
-	public double likely=-1;
+	public double prob=-1;
 	
 	@Override
 	public String toString() {
-		return "{m="+mass+",bel="+belief+","+(likely != -1 ? "LIKELY="+likely+',' : "")+"pl="+plausability+'}';
+		return "{m="+mass+",bel="+belief+","+(prob != -1 ? "PROB="+prob+',' : "")+"pl="+plausability+'}';
 	}
 
 	@Override

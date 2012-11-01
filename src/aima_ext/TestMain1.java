@@ -60,14 +60,14 @@ public class TestMain1 {
 		
 		StringBuffer sb = new StringBuffer();
 		Formatter formatter = new Formatter(sb);
-		for (double c = 0; c <= 1; c += 0.1) {
+		for (double c = 0; c < 1.001; c += 0.01) {
 			DSRandVar clone = new DSRandVar(load);
 			clone.weakenByCertainty(c);
 			clone.propagateMassToLikelihood();
-			formatter.format("%3.1f %5.3f %5.3f %5.3f\n", c,
-					clone.getUnmodifiablePowersetMap().get(Collections.singleton("peter")).likely,
-					clone.getUnmodifiablePowersetMap().get(Collections.singleton("paul")).likely,
-					clone.getUnmodifiablePowersetMap().get(Collections.singleton("mary")).likely);
+			formatter.format("%3.2f %5.3f %5.3f %5.3f\n", c,
+					clone.getUnmodifiablePowersetMap().get(Collections.singleton("peter")).prob,
+					clone.getUnmodifiablePowersetMap().get(Collections.singleton("paul")).prob,
+					clone.getUnmodifiablePowersetMap().get(Collections.singleton("mary")).prob);
 		}
 		formatter.close();
 		System.out.println(sb.toString());

@@ -25,10 +25,11 @@ else
     
 end
 p
+subplot(1,3,1)
 plot(p(1,:),p(2:numel(data)+1,:))
 xlabel('Confidence');
-ylabel('Likelihood Vector [1,2,3] Scaled');
-pause
+ylabel('Probabilities');
+%pause
 
 % Ratios
 r = zeros(numel(data)*(numel(data)-3)/2+numel(data),numbins);
@@ -40,14 +41,16 @@ for i = 2:numel(data)+1
     end
 end
 r
+subplot(1,3,2)
 plot(p(1,:),r)
 xlabel('Confidence');
 ylabel('Ratios between entries');
-pause
+%pause
 
 % Std. Dev.
 sd = std(p(2:end,:))
+subplot(1,3,3)
 plot(p(1,:),sd)
 xlabel('Confidence');
 ylabel('Standard Deviation');
-
+suptitle('Weakening function properties vs. confidence')

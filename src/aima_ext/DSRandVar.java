@@ -32,7 +32,7 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 			if (startWithVacuous && subset.equals(singleEvents))
 				si.mass = 1;
 			if (subset.size() == 1)
-				si.likely = 1;
+				si.prob = 1;
 			powersetMap.put(subset, si);
 		}
 		assert(!startWithVacuous || SubsetInfo.verifyValidMass(powersetMap.values()));
@@ -95,14 +95,18 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 		Map<Set, SubsetInfo> subsetMap = new HashMap<Set, SubsetInfo>();
 		CSVReader reader = new CSVReader(fr);
 		String [] nextLine;
-	    while ((nextLine = reader.readNext()) != null) {
+	    while ((nextLine = reader.readNext()) != null && nextLine.length > 1) {
 	        Set<String> subset = DSRandVar.stringToStringSet(nextLine[0]);
 	        SubsetInfo si = new SubsetInfo();
 	        si.mass = Double.parseDouble(nextLine[1]);
-	        if (nextLine.length > 2)
-	        	si.likely = Double.parseDouble(nextLine[2]);
+	        if (nextLine.length > 2) {
+	        	if (subset.size() != 1)
+	        		System.err.println("Warning: ignoring probability associated with "+subset);
+	        	else
+	        		si.prob = Double.parseDouble(nextLine[2]);
+	        }
 	        else if (subset.size() == 1)
-	        	si.likely = 1;
+	        	si.prob = 1;
 	        subsetMap.put(subset, si);
 	    }
 	    reader.close();
@@ -110,35 +114,60 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 	}
 	
 	public String toFixedWidthString(boolean includeHeader, boolean includeAll) {
+		return toFixedWidthString(includeHeader, includeAll, false);
+	}
+	
+	public String toFixedWidthString(boolean includeHeader, boolean includeAll, boolean latex) {
 		// first, get the max length of the subset
 		int maxSubsetLength = powersetMap.get(domain.getPossibleValues()).toString().length();
 		StringBuilder sb = new StringBuilder();
 	    Formatter formatter = new Formatter(sb); // Send all output to the Appendable object sb
 	    String format;
 	    Object[] args;
+	    char colsep = latex ? '&' : ' ';
+	    if (latex)
+			sb.append(
+					"\\begin{table}[htbp]\n"
+					  +"\\centering\n"
+					  +"%\\caption{Add caption}\n"
+					    +"\\begin{tabular}{"+(includeAll ? "rllll" : "rc")+"}\n"
+					+"\\toprule\n"    
+					
+					);
 	    if (includeAll) {
 	    	if (includeHeader)
-	    		formatter.format("%"+maxSubsetLength+"s mass  bel   LIKEY plaus\n", "subset");
-	    	format = "%"+maxSubsetLength+"s %5.3f %5.3f %5.3f %5.3f\n";
+	    		formatter.format("%"+maxSubsetLength+"s"+colsep+"mass "+colsep+"bel  "+colsep+"Prob "+colsep+"plaus"+(latex ? "\\\\":"")+'\n', "subset");
+	    	format = "%"+maxSubsetLength+"s"+colsep+"%5.3f"+colsep+"%5.3f"+colsep+"%5.3f"+colsep+"%5.3f"+(latex ? "\\\\":"")+'\n';
 	    }
 	    else {
 	    	if (includeHeader)
-	    		formatter.format("%"+maxSubsetLength+"s mass\n", "subset");
-    		format = "%"+maxSubsetLength+"s %5.3f\n";
+	    		formatter.format("%"+maxSubsetLength+"s"+colsep+"mass"+(latex ? "\\\\":"")+'\n', "subset");
+    		format = "%"+maxSubsetLength+"s"+colsep+"%5.3f"+(latex ? "\\\\":"")+'\n';
 	    }			
-	    
+	    if (latex) sb.append("\\midrule\n");
 		List<Entry<Set,SubsetInfo>> sortedEntryList = new ArrayList<Entry<Set,SubsetInfo>>(powersetMap.entrySet());
 		Collections.sort(sortedEntryList, new ComparatorByFirstEntry());
 		for (Entry<Set,SubsetInfo> entry : sortedEntryList) {
 			if (includeAll)
-				args = new Object[] { DSRandVar.collectionToString(entry.getKey()), entry.getValue().mass, entry.getValue().belief, entry.getValue().likely,
+				args = new Object[] { DSRandVar.collectionToString(entry.getKey()), entry.getValue().mass, entry.getValue().belief, entry.getValue().prob,
 					entry.getValue().plausability };
 			else
 				args = new Object[] { DSRandVar.collectionToString(entry.getKey()), entry.getValue().mass };
 			formatter.format(format, args);
 		}
 		formatter.close();
-		return sb.toString().replaceAll(" 0.000", " 0    ").replaceAll(" -1.000", "      ").replaceAll(" 1.000", " 1    ");
+		if (latex)
+			sb.append(
+					"\\bottomrule\n"
+				    +"\\end{tabular}\n"
+				  +"%\\label{tab:addlabel}\n"
+				+"\\end{table}\n"
+					);
+		if (latex) sb.replace(sb.indexOf("\\toprule"), sb.length(), 
+				sb.substring(sb.indexOf("\\toprule")).replaceAll("\\[", "{[").replaceAll("\\]","]}") );
+		String s = sb.toString().replaceAll("0.000", "0    ").replaceAll("-1.000", "     ").replaceAll("1.000", "1    ");
+		//if (latex) s = s.replaceAll("\\[", "\\\\left[").replaceAll("\\]","\\\\right]");
+		return s;
 	}
 	
 	/** File format:
@@ -160,7 +189,7 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 			String[] row = entry.getKey().size() == 1 ? new String[3] : new String[2];
 			row[0] = DSRandVar.collectionToString(entry.getKey());
 			row[1] = String.valueOf(entry.getValue().mass);
-			if (entry.getKey().size() == 1) row[2] = String.valueOf(entry.getValue().likely);
+			if (entry.getKey().size() == 1) row[2] = String.valueOf(entry.getValue().prob);
 			writer.writeNext(row);
 		}
 		writer.close();
@@ -314,13 +343,13 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 				}
 			}
 			assert (si != null);
-			si.likely = likelyCur;
+			si.prob = likelyCur;
 			siSet.add(si);
 			likelyTotal += likelyCur;
 		}
 		// normalize - not required, but why not =)
 		for (SubsetInfo si : siSet) // DON'T NEED TO NORMALIZE ANYMORE - MAKE SURE BEFORE REMOVING
-			si.likely /= likelyTotal;
+			si.prob /= likelyTotal;
 	}
 	
 	/** Change likelihoods to probabilities by dividing by the sum of likelihoods */
@@ -331,10 +360,10 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 		for (Object singleObj : subsetOfSingletons) {
 			SubsetInfo si = powersetMap.get(Collections.singleton(singleObj));
 			siSet.add(si);
-			likelyTotal += si.likely;
+			likelyTotal += si.prob;
 		}
 		for (SubsetInfo si : siSet)
-			si.likely /= likelyTotal;
+			si.prob /= likelyTotal;
 	}
 	
 	/** I wonder... are the likelihoods generated by the masses in sync with the likelihoods normally combined? YES - should be okay */
@@ -399,12 +428,12 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 			SubsetInfo si1 = powersetMap.get(singleSet),
 					si2 = rv2.powersetMap.get(singleSet),
 					sinew = rvnew.powersetMap.get(singleSet);
-			sinew.likely = si1.likely * si2.likely;
+			sinew.prob = si1.prob * si2.prob;
 			siListNew.add(sinew);
-			likelyTotal += sinew.likely;
+			likelyTotal += sinew.prob;
 		}
 		for (SubsetInfo sinew : siListNew) // normalize likelihood of sinew
-			sinew.likely /= likelyTotal;
+			sinew.prob /= likelyTotal;
 		
 		assert (SubsetInfo.verifyValidMass(rvnew.powersetMap.values()));
 		System.out.println("Does the combination "+rvnew.name+" has likelihood-mass compatibility: "+rvnew.checkMassLikelyCompatible());
