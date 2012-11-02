@@ -37,7 +37,7 @@ From the probability mass we derive the useful \textit{belief} $Bel$ and \textit
 \[
 \begin{array}{rl}
 Bel(A) & \triangleq \text{sum of masses of subsets of A}\\
-	& = \sum_{B \subseteq A} m(B)\\
+	& = \sum_{B \subseteq A} m(B) \\
 	& = \dfrac{\text{\# of worlds where A \textbf{provably} contains the truth}}{\text{total \# of worlds}}\\
 	& = \text{a very conservative lower bound on } P(A)\\
 Pl(A) & \triangleq 1-Bel(\bar{A})\\
@@ -50,7 +50,7 @@ Pl(A)-Bel(A) & = \dfrac{\text{\# of worlds where A \textbf{possibly} contains th
 As an axiom, $m(\emptyset)=Bel(\emptyset)=0$, and we can derive that $Bel(D_X)=1$.  Perhaps the best way to describe these functions and their properties is by example, so let's move on to a simple example.
 %and so the reader may want to skip to the next section to gain familiarity with manipulating masses.
 
-\section{2-State Single Variable: The Coin Flip}
+\section{D.S. by Example: 2-State Single Variable}
 \subsection{No evidence}
 Suppose someone gives hands you a coin, but tells you nothing about the nature of the coin.  It could be oddly weighted, favoring heads more than tails or vice versa, or it could be fair.  Under Dempster-Shafer tenets, we would assign the \textit{vacuous} belief function (vacuous because it represents no information)
 \[ m(\{Heads\}) = 0, m(\{Tails\}) = 0, m(\{Heads,Tails\})=1 \]
@@ -135,6 +135,18 @@ Let's return to our coin flipping example and apply the weakening function.  We 
 \end{tabular}
 \label{tab:CoinFlipWeakened}
 \end{table}
+
+\subsection{Combining Evidence}
+Now that we have examined two types of evidence, the natural next step is to ask how to combine them after observing both.  We can predict the outcome in advance; combining knowledge that the coin will always flip to heads and knowledge with 60\% certainty that Heads will appear 70\% of the time ought to result in knowledge that the coin will always flip to heads.  More generally, we can show that a complete probability model will always remain a complete probability model when combined with any evidence. (Todo CITE this result, or provide it here // and this may not be the right place as it gives the impression that the certain evidence cannot change (only true here because all our mass is on Heads))
+
+Let $m_1$ and $m_2$ be the first and second piece of evidence forming the resultant probability mass $m_{1 \oplus 2}$.  We must consider every pairing of masses for each subset $\in 2^X$.  There are three cases of evidence combination:
+\begin{itemize}
+\item Evidence in total agreement. Apply the combination of $m_1(A)$ with $m_2(A)$ fully to $m_{1 \oplus 2}(A)$.
+\item Evidence in partial agreement.  Apply the combination of $m_1(A)$ with $m_2(B)$ with $A \neq B$ to $m_{1 \oplus 2}(A \cap B)$.
+\item Totally conflicting evidence.  Throw away the combination of $m_1(A)$ with $m_2(B)$ with $A \cap B = \emptyset$, because it represents an impossible world under the two pieces of evidence.
+\end{itemize}
+We can combine $m_1$ and $m_2$ in this way using the Orthogonal Sum, also known as Dempster's Rule of Combination:
+
 
 \section{3-State Single Variable}
 Let's consider the case of a murder investigation that after considerable detective work has only three possible suspects: Peter, Paul and Mary.\footnote{Inspired by pg. 465 of \cite{Pearl1988}}  Let G be the random variable denoting the murderer and let the domain of G be \{Peter, Paul, Mary\}.  Let's see how the Bayesian and Dempster-Shafer approaches handle this scenario with varying degrees of evidence. 

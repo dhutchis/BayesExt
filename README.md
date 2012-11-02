@@ -17,5 +17,10 @@ References:
 * [Bilmes: On Virtual Evidence and Soft Evidence in Bayesian Networks](https://www.ee.washington.edu/techsite/papers/documents/UWEETR-2004-0016.pdf)
 * [Pearl: Probabilistic Reasoning in Intelligent Systems](http://books.google.com/books?id=AvNID7LyMusC)
 
+To consider:
+
+*	Underflow problem with doubles... Currently resolved by rounding to 7 decimal places via [BigDecimal](http://docs.oracle.com/javase/6/docs/api/java/math/BigDecimal.html).
+*	Reconcile with Cromwell's Rule -- don't use a probability of 0 or 1 except for a logical tautalogy or contradiction.
+
 [aima-home]: http://aima.cs.berkeley.edu/
 [aima-java]: http://code.google.com/p/aima-java/

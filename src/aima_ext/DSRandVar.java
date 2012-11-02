@@ -10,6 +10,8 @@ import au.com.bytecode.opencsv.CSVWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -416,7 +418,8 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 		}
 		// now normalize masses
 		for (SubsetInfo si : rvnew.powersetMap.values()) {
-			si.mass /= (1-nullvalue);
+			si.mass = new BigDecimal(si.mass).divide(new BigDecimal(1-nullvalue), 7, RoundingMode.HALF_UP).doubleValue();
+			//si.mass /= (1-nullvalue); //ROUNDING PROBLEMS
 		}
 		
 		// let's get the likelihood vector too
