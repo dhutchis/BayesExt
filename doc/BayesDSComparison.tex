@@ -29,7 +29,7 @@
 
 \section{Probability and Dempster-Shafer}
 Let $X$ be a random variable and $D_X$ be the domain of X (the possible states X can assume).  Traditional probability theory assigns a weight to each state $x \in D_X$, denoted as $P(X=x)$ (or just $P(x)$ when $X$ is understood as the random variable) such that $\sum_{x \in D_X}x = 1$. Ideally, $P(X=x)$ will equal the long run proportion 
-\[P(X=x) = \dfrac{\text{the true \# of possible worlds where } X=x}{\text{total \# of possible worlds}}\]
+\[P(X=x) = \dfrac{\text{\# of possible worlds where } X=x}{\text{total \# of possible worlds}}\]
 In the non-ideal case, $P(x)$ is our best guess of the above true long run proportion.
 
 Dempster-Shafer theory\footnote{see \cite{Shafer1976} for the comprehensive presentation of Dempster-Shafer theory with proofs} assigns probability \textit{masses} to each subset $A \in 2^X$, where $2^X$ is the power set of $D_X$ and $m(A)$ is the mass assignment, with the similar requirement that $\sum_{A \in 2^{X}}m(A) = 1$.  One can think of the probability mass as an assignment of probability to a set of possible worlds.  
@@ -50,7 +50,7 @@ Pl(A)-Bel(A) & = \dfrac{\text{\# of worlds where A \textbf{possibly} contains th
 As an axiom, $m(\emptyset)=Bel(\emptyset)=0$, and we can derive that $Bel(D_X)=1$.  Perhaps the best way to describe these functions and their properties is by example, so let's move on to a simple example.
 %and so the reader may want to skip to the next section to gain familiarity with manipulating masses.
 
-\section{D.S. by Example: 2-State Single Variable}
+\section{D.S. by example: 2-State Single Variable}
 \subsection{No evidence}
 Suppose someone gives hands you a coin, but tells you nothing about the nature of the coin.  It could be oddly weighted, favoring heads more than tails or vice versa, or it could be fair.  Under Dempster-Shafer tenets, we would assign the \textit{vacuous} belief function (vacuous because it represents no information)
 \[ m(\{Heads\}) = 0, m(\{Tails\}) = 0, m(\{Heads,Tails\})=1 \]
@@ -185,7 +185,7 @@ $\emptyset$ & 0.18 & 0 \\
 
 Note that this sum is not defined for totally conflicting evidence that attributes all the probability mass to the empty set (leading to division by zero).  The only case where this happens is when we try to combine two certain pieces of evidence that conflict each other.  For example, suppose we receive information that the coin will flip to heads all the time and information that the coin will flip to tails all the time, and we trust each piece of information with 100\% certainty.  Clearly we have misplaced our trust; the fact that we cannot invoke Dempster's Rule means that one of the pieces of information must be wrong.  
 
-We can avoid cases where Dempster's Rule cannot be applied by following Cromwell's Rule(CITE), which states that we should not never assign a probability of 0 or 1 to any proposition that is not a logical tautology or contradiction.  Instead, we could assign the values seen in the Table~\ref{tab:CombineCoinCromwell}, which shows the expected result of applying equal evidence to Heads and Tails given both items of evidence.
+We can avoid cases where Dempster's Rule cannot be applied by following Cromwell's Rule\footnote{See pg. 18 of \cite{Jackman2009} for arguments supporting Cromwell's rule in the context of Bayesian updating.}, which states that we should not never assign a probability of 0 or 1 to any proposition that is not a logical tautology or contradiction.  Instead, we could assign the values seen in the Table~\ref{tab:CombineCoinCromwell}, which shows the expected result of applying equal evidence to Heads and Tails given both items of evidence.
 
 \begin{table}[htbp]
 \centering
@@ -195,9 +195,9 @@ We can avoid cases where Dempster's Rule cannot be applied by following Cromwell
 subset & $m_1$ & $m_2$ & $m_{1 \oplus 2}$ \\
 \hline
 $\emptyset$ & 0 & 0 & 0 \\
-\{Heads\} & $1-\epsilon$ & 0 & $(1-\epsilon)*\epsilon$ \\
-\{Tails\} & 0 & $1-\epsilon$ & $(1-\epsilon)*\epsilon$ \\
-\{Heads,Tails\} & $\epsilon$ & $\epsilon$ & $\epsilon\epsilon$ \\
+\{Heads\} & $1-\epsilon$ & $\epsilon$ & $(1-\epsilon)*\epsilon$ \\
+\{Tails\} & $\epsilon$ & $1-\epsilon$ & $(1-\epsilon)*\epsilon$ \\
+\{Heads,Tails\} & 0 & 0 & 0 \\
 \hline
 \end{tabular}
 \label{tab:CombineCoinCromwell}

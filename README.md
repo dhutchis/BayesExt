@@ -20,7 +20,7 @@ References:
 To consider:
 
 *	Underflow problem with doubles... Currently resolved by rounding to 7 decimal places via [BigDecimal](http://docs.oracle.com/javase/6/docs/api/java/math/BigDecimal.html).
-*	Reconcile with Cromwell's Rule -- don't use a probability of 0 or 1 except for a logical tautalogy or contradiction.
+*	Investigate why attributing the mass assigned to the empty set should be divided from all masses.  Can we just add it to the universe set?
 
 [aima-home]: http://aima.cs.berkeley.edu/
 [aima-java]: http://code.google.com/p/aima-java/
