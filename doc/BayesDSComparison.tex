@@ -128,25 +128,80 @@ Let's return to our coin flipping example and apply the weakening function.  We 
                 subset&mass &bel  &Prob &plaus\\
 \midrule
                     {[]}&0    &0    &     &0    \\
-               {[Heads]}&0.420&0.420&0.620&0.820\\
-               {[Tails]}&0.180&0.180&0.380&0.580\\
-        {[Heads, Tails]}&0.400&1    &     &1    \\
+               {[Heads]}&0.42&0.42&0.62&0.82\\
+               {[Tails]}&0.18&0.18&0.38&0.58\\
+        {[Heads, Tails]}&0.40&1    &     &1    \\
 \bottomrule
 \end{tabular}
 \label{tab:CoinFlipWeakened}
 \end{table}
 
 \subsection{Combining Evidence}
-Now that we have examined two types of evidence, the natural next step is to ask how to combine them after observing both.  We can predict the outcome in advance; combining knowledge that the coin will always flip to heads and knowledge with 60\% certainty that Heads will appear 70\% of the time ought to result in knowledge that the coin will always flip to heads.  More generally, we can show that a complete probability model will always remain a complete probability model when combined with any evidence. (Todo CITE this result, or provide it here // and this may not be the right place as it gives the impression that the certain evidence cannot change (only true here because all our mass is on Heads))
+Now that we have examined two types of evidence, the natural next step is to ask how to combine them after observing both.  We can predict the outcome in advance; combining knowledge that the coin will always flip to heads and knowledge with 60\% certainty that Heads will appear 70\% of the time ought to result in knowledge that the coin will always flip to heads.  
+%More generally, we can show that a complete probability model will always remain a complete probability model when combined with any evidence. (Todo CITE this result, or provide it here // and this may not be the right place as it gives the impression that the certain evidence cannot change (only true here because all our mass is on Heads))
 
 Let $m_1$ and $m_2$ be the first and second piece of evidence forming the resultant probability mass $m_{1 \oplus 2}$.  We must consider every pairing of masses for each subset $\in 2^X$.  There are three cases of evidence combination:
 \begin{itemize}
 \item Evidence in total agreement. Apply the combination of $m_1(A)$ with $m_2(A)$ fully to $m_{1 \oplus 2}(A)$.
 \item Evidence in partial agreement.  Apply the combination of $m_1(A)$ with $m_2(B)$ with $A \neq B$ to $m_{1 \oplus 2}(A \cap B)$.
-\item Totally conflicting evidence.  Throw away the combination of $m_1(A)$ with $m_2(B)$ with $A \cap B = \emptyset$, because it represents an impossible world under the two pieces of evidence.
+\item Totally conflicting evidence.  Throw away the combination of $m_1(A)$ with $m_2(B)$ with $A \cap B = \emptyset$, because it represents an impossible world under the two pieces of evidence.  Account for this loss in mass by dividing the other masses by the mass thrown away.
 \end{itemize}
 We can combine $m_1$ and $m_2$ in this way using the Orthogonal Sum, also known as Dempster's Rule of Combination:
+\[
+m_{1 \oplus 2}(C) = \dfrac{\displaystyle\sum_{A_i \cap B_j = C}m_1(A_i)m_2(B_j)}
+	{1-\displaystyle\sum_{A_i \cap B_j = \emptyset}m_1(A_i)m_2(B_j)}
+\]
+Let's apply the rule to our two items of evidence.  We can construct Table~\ref{tab:CombineCoinFlip} where each entry corresponds to the intersection of the row (taken from the second evidence) and the column (taken from the first evidence).  Our final mass is shown in the lower part.
 
+\begin{table}[htbp]
+\centering
+\caption{Combining evidence in Table~\ref{tab:CoinFlipAllHeads} with Table~\ref{tab:CoinFlipWeakened}}
+%\def\baselinestretch {}\selectfont %
+%$\vcenter{\strut\{Heads\}\par 1*0.42=0.42 \strut}$ attempt at multiline
+\begin{tabular}{|c|ccc|}
+\hline 
+$\cap$ & \{Heads\} 1.0 & \{Tails\} 0.0 & \{Heads,Tails\} 0.0 \\ 
+\hline 
+\{Heads\} 0.42 & \{Heads\} 1*0.42=0.42 & $\emptyset$ \ 0*0.42=0 & \{Heads\} \ 0*0.42=0 \\ 
+
+\{Tails\} 0.18 & $\emptyset$ \ 1*0.18=0.18 & \{Tails\} 0*0.18=0 & \{Tails\} \ 0*0.18=0 \\ 
+
+\{Heads,Tails\} 0.40 & \{Heads\} 1*0.4=0.4 & \{Tails\} 0*0.4=0 & \{Heads,Tails\} 0*0.4=0 \\ 
+\hline 
+\end{tabular}
+\\
+\begin{tabular}{|c|c|c|}
+%\hline
+Subset & Summed Mass & Normalized Mass \\
+\hline
+$\emptyset$ & 0.18 & 0 \\
+\{Heads\} & 0.42+0.4= 0.82 & $\frac{0.82}{1-0.18} = 1$ \\
+\{Tails\} & 0 & 0 \\
+\{Heads,Tails\} & 0 & 0 \\
+\hline
+\end{tabular}
+\label{tab:CombineCoinFlip}
+\end{table}
+
+Note that this sum is not defined for totally conflicting evidence that attributes all the probability mass to the empty set (leading to division by zero).  The only case where this happens is when we try to combine two certain pieces of evidence that conflict each other.  For example, suppose we receive information that the coin will flip to heads all the time and information that the coin will flip to tails all the time, and we trust each piece of information with 100\% certainty.  Clearly we have misplaced our trust; the fact that we cannot invoke Dempster's Rule means that one of the pieces of information must be wrong.  
+
+We can avoid cases where Dempster's Rule cannot be applied by following Cromwell's Rule(CITE), which states that we should not never assign a probability of 0 or 1 to any proposition that is not a logical tautology or contradiction.  Instead, we could assign the values seen in the Table~\ref{tab:CombineCoinCromwell}, which shows the expected result of applying equal evidence to Heads and Tails given both items of evidence.
+
+\begin{table}[htbp]
+\centering
+\caption{Combining certain contradictory evidence respecting Cromwell's Rule}
+\begin{tabular}{|c|c|c|c|}
+\hline
+subset & $m_1$ & $m_2$ & $m_{1 \oplus 2}$ \\
+\hline
+$\emptyset$ & 0 & 0 & 0 \\
+\{Heads\} & $1-\epsilon$ & 0 & $(1-\epsilon)*\epsilon$ \\
+\{Tails\} & 0 & $1-\epsilon$ & $(1-\epsilon)*\epsilon$ \\
+\{Heads,Tails\} & $\epsilon$ & $\epsilon$ & $\epsilon\epsilon$ \\
+\hline
+\end{tabular}
+\label{tab:CombineCoinCromwell}
+\end{table}
 
 \section{3-State Single Variable}
 Let's consider the case of a murder investigation that after considerable detective work has only three possible suspects: Peter, Paul and Mary.\footnote{Inspired by pg. 465 of \cite{Pearl1988}}  Let G be the random variable denoting the murderer and let the domain of G be \{Peter, Paul, Mary\}.  Let's see how the Bayesian and Dempster-Shafer approaches handle this scenario with varying degrees of evidence. 
