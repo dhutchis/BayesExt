@@ -90,8 +90,10 @@ public class DSRandVar implements RandomVariable { // and TermProposition?
 		{
 			StringBuffer sb = new StringBuffer();
 			int c;
-			while ((c = fr.read()) != '\n')
+			while ((c = fr.read()) != '\n' && c != '\r')
 				sb.appendCodePoint(c);
+			if (c == '\r') // for \r\n
+				c = fr.read();
 			name = sb.toString();
 		}
 		Map<Set, SubsetInfo> subsetMap = new HashMap<Set, SubsetInfo>();

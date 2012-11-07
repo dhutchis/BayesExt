@@ -13,7 +13,7 @@
 \pagestyle{empty} % no page numbers
 
 \author{Dylan Hutchison}
-\title{A Comparison between Dempster-Shafer and Bayesian Approaches to Soft Evidence}
+\title{Dempster-Shafer Masses \\to Generalize of Bayesian Reasoning}
 \date{last updated \today}
 %\institute{Stevens Institute of Technology\\
 %Hoboken, NJ 07030
@@ -26,6 +26,11 @@
 %\begin{center}
 %A Comparison between Dempster-Shafer and Bayesian Approaches to Soft Evidence
 %\end{center}
+
+\section{Introduction}
+In this paper, I seek to generalize the nodes of a discrete Bayesian network to include Dempster-Shafer masses, a measure that includes the standard probabilities associated with a variable as a special case.  With the additional information specified in the masses, we can compute the proportion of time that a proposition is provable (the Belief) and possible (the Plausibility).  These can also be interpreted as an ultra-conservative lower and upper bound on the true probability of the proposition.  As seen in Section [bla], some scenarios call for direct queries on these non-standard kinds of probabilities rendering them very useful.
+
+[Insert outline of paper]
 
 \section{Probability and Dempster-Shafer}
 Let $X$ be a random variable and $D_X$ be the domain of X (the possible states X can assume).  Traditional probability theory assigns a weight to each state $x \in D_X$, denoted as $P(X=x)$ (or just $P(x)$ when $X$ is understood as the random variable) such that $\sum_{x \in D_X}x = 1$. Ideally, $P(X=x)$ will equal the long run proportion 
@@ -99,8 +104,17 @@ Notice that the level of uncertainty in the events $a \in D_X$ is $Pl(\{a\})-Bel
 \label{tab:CoinFlipAllHeads}
 \end{table}
 
-\subsection{Weakening evidence}
-Now let's look at another coin with a heads side and tails side, but still no knowledge of any weighting it may have.  Suppose we weigh the coin on a scale which concludes that uneven weight distributions in the coin give it a 70\% chance of Heads.  However, there is uncertainty in the evidence since the magnetometer may be faulty or there may be other sources of bias in the coin (such as magnetism), allowing us to trust the evidence with only 60\% confidence.  How can we weaken the traditional assignment $\{ m(\{Heads\})=0.7, m(\{Tails\})=0.3 \}$ so that we leave some level of uncertainty in our probabilities?  We need to find some function f with parameter c (our level of confidence) and the following properties:
+\subsection{Weakening evidence with a measure of confidence}
+Not all evidence we receive on the coin is certain.  For example, a magician might come and tell us that the coin is fair, with $m(\{Heads\})=m(\{Tails\})=0.5$.  We are now faced with two questions as demonstrated in \cite{Shafer1990}:
+\begin{enumerate}
+\item Is the evidence (the magician) reliable?
+\item Will the next coin flip be heads?
+\end{enumerate}
+If the answer to the first is yes, then we have total certainty in the second; we will know the coin is fair and we can specify a complete probability model.  If the answer to the first is no, however, we have no information on the coin.  It could be the case that the magician just told us the statement without any basis for it but the coin really is fair, or the magician could have knowingly lied and the coin is greatly biased.  We can estimate our uncertainty to the first question with a probability.  We then need to propagate the uncertainty in the first statement to our belief in the second statement.
+
+Let's look at another coin.  Suppose we weigh the coin on a scale which concludes that the coin's uneven weight distributions give it a 70\% chance of Heads.  However, there is uncertainty in the evidence since the magnetometer may be faulty or there may be other sources of bias in the coin (such as magnetism), allowing us to trust the evidence with only 60\% confidence.  We thus have assign a probability of 0.6 to the first question, the question of reliability of the evidence, which if true, will specify a mass assignment of $\{ m(\{Heads\})=0.7, m(\{Tails\})=0.3 \}$.  We could think of this as a complete probability specification that is true 60\% of the time, if we were to examine many instances of weightings of the scale on similar coins.
+
+How can we weaken the traditional assignment so that we leave some level of uncertainty in our probabilities?  We need to find some function f with parameter c (our level of confidence) and the following properties:
 \begin{itemize}
 \item The masses are unaltered (not weakened) when c = 1.
 \item The masses become the vacuous function when c = 0, destroying any information the evidence originally bore.
@@ -139,6 +153,8 @@ Let's return to our coin flipping example and apply the weakening function.  We 
 \subsection{Combining Evidence}
 Now that we have examined two types of evidence, the natural next step is to ask how to combine them after observing both.  We can predict the outcome in advance; combining knowledge that the coin will always flip to heads and knowledge with 60\% certainty that Heads will appear 70\% of the time ought to result in knowledge that the coin will always flip to heads.  
 %More generally, we can show that a complete probability model will always remain a complete probability model when combined with any evidence. (Todo CITE this result, or provide it here // and this may not be the right place as it gives the impression that the certain evidence cannot change (only true here because all our mass is on Heads))
+
+In order to combine the two items of evidence, we must check that the two items are independent.  In particular, there should be no common cause of items of evidence.  If there is such a common cause, we need to coarsen our frame of discernment to include is.  We will revisit this case later; for now let's assume our two items of evidence are independent.
 
 Let $m_1$ and $m_2$ be the first and second piece of evidence forming the resultant probability mass $m_{1 \oplus 2}$.  We must consider every pairing of masses for each subset $\in 2^X$.  There are three cases of evidence combination:
 \begin{itemize}
@@ -195,13 +211,14 @@ We can avoid cases where Dempster's Rule cannot be applied by following Cromwell
 subset & $m_1$ & $m_2$ & $m_{1 \oplus 2}$ \\
 \hline
 $\emptyset$ & 0 & 0 & 0 \\
-\{Heads\} & $1-\epsilon$ & $\epsilon$ & $(1-\epsilon)*\epsilon$ \\
-\{Tails\} & $\epsilon$ & $1-\epsilon$ & $(1-\epsilon)*\epsilon$ \\
+\{Heads\} & $1-\epsilon$ & $\epsilon$ & 0.5 \\
+\{Tails\} & $\epsilon$ & $1-\epsilon$ & 0.5 \\
 \{Heads,Tails\} & 0 & 0 & 0 \\
 \hline
 \end{tabular}
 \label{tab:CombineCoinCromwell}
 \end{table}
+
 
 \section{3-State Single Variable}
 Let's consider the case of a murder investigation that after considerable detective work has only three possible suspects: Peter, Paul and Mary.\footnote{Inspired by pg. 465 of \cite{Pearl1988}}  Let G be the random variable denoting the murderer and let the domain of G be \{Peter, Paul, Mary\}.  Let's see how the Bayesian and Dempster-Shafer approaches handle this scenario with varying degrees of evidence. 
@@ -209,7 +226,25 @@ Let's consider the case of a murder investigation that after considerable detect
 \subsection{No evidence}
 %Bayesian theory tells us to impart equal prior probability to the possible states of G if there is no other information.  Thus P(Peter)=P(Paul)=P(Mary)= $\tfrac{1}{3}$.
 
-Dempster-Shafer theory will impart no belief to any of the three single states of G, resulting in the \textit{vacuous} belief function
+Dempster-Shafer theory will impart no belief to any of the three single states of G, resulting in the vacuous belief function
+...
+
+
+\section{D.S. in a causal network}
+Unfortunately, the Belief and Plausibility of a variable cannot generally propagate to other variables.  Take the case of the Alarm causal network (INCLUDE IT HERE).  We might be able to prove that an alarm will ring 20\% of the time ($Bel({Alarm})=0.20$), for example, but we have no way of knowing what proportion of time Watson will call from that information because the mechanism Watson uses to decide whether to call is unknown (random, conditioned on the alarm).  Only if Watson deterministically makes a call (say, $P(W|A) = 1$) can we say something non-trivial about the proportion of time Watson can be proved to call (in this case, yielding $Bel(W) = 0.20$; Watson can be proved to call the 20\% of the time that the Alarm can be proved to ring).
+
+We can call these deterministic relationships \textit{compatibility constraints}.  In a network with many such constraints, such as a network of devices connected to power supplies.  Surely a device will fail if the power supply fails, so we can propagate the belief that the power supply will fail to the belief that the device will fail.
+% that will deterministically produce a result given some number of inputs, we may be able to obtain a lot of information from Dempster-Shafer bounds.  Of course, this does not hold if we allow for the possibility of logic circuits faulting.  Suppose we also take into account the power supplies for the logic circuits.  Surely the circuits must fail if the power supply fails.  Th
+
+
+\section{Why use Dempster-Shafer bounds?}
+%Whenever there is a network that has compatibility constraints, Dempster-Shafer bounds can provide useful information.  For example, in the case of a network of switches where it is necessary for switch 1 to be on in order for a connected appliance to function, we can propagate the proportion of time that switch 1 is provably never on to the proportion of time that the appliance is provably never on.
+...
+
+\subsection{When the context mandates provability or impossibility}
+Sometimes it is useful to know the proportion of time that a proposition is provable or that a proposition is possible at all.  Pearl demonstrates this clearly with the example of a scheduling problem, where teachers are assigned to time slots to teach certain subjects. \cite{Pearl1988}  In this case, evidence takes the form of constraints that state that a teacher cannot teach two different subjects in the same time slot, for example.  A teacher might ask "What are the odds that I will be forced to teach English?"  This is equivalent to querying the belief that the teacher will teach English; it represents the proportion of time that the teacher can be proved to teach English by the compatibility constraints.
+...
+%\subsection{In the presence of compatibility constraints}
 
 
 \bibliographystyle{splncs}
